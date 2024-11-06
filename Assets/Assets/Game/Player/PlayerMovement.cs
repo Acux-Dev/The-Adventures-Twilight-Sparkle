@@ -5,51 +5,28 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public float speed = 5f;
+    public Vector2 direction;
 
-    [SerializeField]
-    private float _speed;
+    Rigidbody2D rigidbody;
 
-
-    private Rigidbody2D _rigidbody;
-    private Vector2 _movementInput;
-    private Vector2 _smoothedMovementInput;
-    private Vector2 _movementInputSmoothVelocity;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    private void Awake()
-    {
-        _rigidbody = GetComponent<Rigidbody2D>();
+        rigidbody = GetComponent<Rigidbody2D>();
     }
 
     private void FixedUpdate()
     {
-        SetPlayerVelocity();
+        rigidbody.velocity = direction * speed;
     }
 
-    private void SetPlayerVelocity()
+    private void Update()
     {
-        _smoothedMovementInput = Vector2.SmoothDamp(
-                    _smoothedMovementInput,
-                    _movementInput,
-                    ref _movementInputSmoothVelocity,
-                    0.1f);
-
-        _rigidbody.velocity = _smoothedMovementInput * _speed;
+        HandleMovement(); // Solo un método Update
     }
 
-    private void OnMove(InputValue inputValue)
+    private void HandleMovement()
     {
-        _movementInput = inputValue.Get<Vector2>();
+        direction = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
     }
-}
+} 
