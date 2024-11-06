@@ -2,32 +2,52 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 5f;
-    public Vector2 direction;
-
     [SerializeField]
-    Rigidbody2D rigidbody;
-
-    private void Start()
+    private float _speed;
+    private Rigidbody2D _rigidbody;
+    private SpriteRenderer _spriteRenderer;
+    private Vector2 _movementInput;
+    private Vector2 _smoothedMovementInput;
+    private Vector2 _movementInputSmoothVelocity;
+    // Start is called before the first frame update
+    void Start()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
     }
-
+    // Update is called once per frame
+    void Update()
+    {
+    }
+    private void Awake()
+    {
+        _rigidbody = GetComponent<Rigidbody2D>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+    }
     private void FixedUpdate()
     {
-        rigidbody.velocity = direction * speed;
+        SetPlayerVelocity();
     }
-
-    private void Update()
+    private void SetPlayerVelocity()
     {
-        HandleMovement(); // Solo un método Update
+        _smoothedMovementInput = Vector2.SmoothDamp(
+                    _smoothedMovementInput,
+                    _movementInput,
+                    ref _movementInputSmoothVelocity,
+                    0.1f);
+        _rigidbody.velocity = _smoothedMovementInput * _speed;
     }
-
-    private void HandleMovement()
+    private void OnMove(InputValue inputValue)
     {
-        direction = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+        _movementInput = inputValue.Get<Vector2>();
+        // Flip sprite based on movement direction
+        if (_movementInput.x > 0)
+        {
+            _spriteRenderer.flipX = true;
+        }
+        else if (_movementInput.x < 0)
+        {
+            _spriteRenderer.flipX = false;
+        }
     }
-} 
+}
