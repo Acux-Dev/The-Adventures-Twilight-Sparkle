@@ -11,6 +11,15 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _movementInput;
     private Vector2 _smoothedMovementInput;
     private Vector2 _movementInputSmoothVelocity;
+
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+    public Animator animator;
+    public int damage = 40;
+    public float attackRate = 2f;
+    public float nextAttackTime = 0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -27,6 +36,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         SetPlayerVelocity();
+        animator.SetFloat("Speed", Mathf.Abs(_smoothedMovementInput.sqrMagnitude));
     }
     private void SetPlayerVelocity()
     {
@@ -43,11 +53,36 @@ public class PlayerMovement : MonoBehaviour
         // Flip sprite based on movement direction
         if (_movementInput.x > 0)
         {
-            _spriteRenderer.flipX = true;
+            // Moving right
+            transform.localScale = new Vector3(-1, 1, 1);
         }
         else if (_movementInput.x < 0)
         {
-            _spriteRenderer.flipX = false;
+            // Moving left
+            transform.localScale = new Vector3(1, 1, 1);
         }
+    }
+
+    private void OnFire()
+    {
+        if (Time.time >= nextAttackTime)
+        {
+            animator.SetTrigger("IsAttacking");
+            //funcion de atacar
+            Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
+
+            foreach (Collider2D enemy in hitEnemies)
+            {
+                enemy.GetComponent<EnemyController>().TakeDamage(damage);
+            }
+            nextAttackTime = Time.time + 1f / attackRate;
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null)
+            return;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
 }
